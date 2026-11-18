@@ -49,13 +49,13 @@ td.n,th.n{text-align:right;font-family:var(--chiffres);font-variant-numeric:tabu
 #ra>*{pointer-events:auto}#ra .bulle{background:rgba(10,14,20,.78);color:#fff;border-radius:10px;padding:8px 12px;font-size:14px;text-align:center}
 #ra button{font-size:16px;padding:12px 16px;border-radius:10px}
 @media (max-width:760px){#corps{flex-direction:column}#outils{flex-direction:row;border-right:0;border-bottom:1px solid var(--trait);padding:6px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px))}#outils button{width:auto;min-width:62px;padding:8px 8px}#outils hr{display:none}
- #cote{width:auto;max-width:none;border-left:0;border-top:1px solid var(--trait);height:42%}#planche{min-height:40%}#panneau{padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}}
+ #cote{width:auto;max-width:none;border-left:0;border-top:1px solid var(--trait);height:34%}#planche{min-height:50%}#saisie{top:56px;right:10px;flex-wrap:wrap}#saisie input{flex:1;min-width:80px}#aide{background:var(--planche);border:1px solid var(--trait);border-radius:8px;padding:6px 8px;text-shadow:none;opacity:.94}#panneau{padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}}
 </style>
 <div id="haut">
  <h1><b>1:1</b>Relevé Numérobis</h1>
  <input id="nom" aria-label="Nom du relevé" value="">
  <div class="groupe" role="tablist" aria-label="Plan"><button id="t-actuel" class="actif">Plan actuel</button><button id="t-renove">Plan rénové</button></div>
- <div class="groupe"><button id="b-annuler" title="Annuler (Ctrl+Z)">↶ Annuler</button><button id="b-ouvrir">Ouvrir</button><button id="b-enreg" class="net">Enregistrer</button><button id="b-dossier" hidden>Dossier PDF</button><button id="b-archicad" hidden>ArchiCAD</button><button id="b-ra" hidden>Relevé en RA</button></div>
+ <div class="groupe"><button id="b-annuler" title="Annuler (Ctrl+Z)">↶ Annuler</button><button id="b-nouveau" title="Commencer un relevé vide">Nouveau</button><button id="b-ouvrir">Ouvrir</button><button id="b-enreg" class="net">Enregistrer</button><button id="b-dossier" hidden>Dossier PDF</button><button id="b-archicad" hidden>ArchiCAD</button><button id="b-ra" hidden>Relevé en RA</button></div>
  <span id="etat" class="note"></span>
  <input type="file" id="f-ouvrir" accept=".json,application/json" hidden><input type="file" id="f-fond" accept="image/*" hidden>
 </div>
@@ -215,7 +215,7 @@ $("niveau").onchange=e=>{iNiv=+e.target.value;sel=null;cadrer();tout()};
 $("b-niv").onclick=()=>{memo();const d=NIV();P().niveaux.push({nom:"Étage "+P().niveaux.length,altitude:+(d.altitude+d.hauteur+.2).toFixed(2),hauteur:d.hauteur,pieces:JSON.parse(JSON.stringify(d.pieces)).map(p=>(p.ouvertures=[],p))});iNiv=P().niveaux.length-1;dire("Étage créé à partir des pièces du niveau du dessous : supprime ou ajuste ce qui change.");modifie()};
 $("t-actuel").onclick=()=>{plan="actuel";sel=null;tout()};
 $("t-renove").onclick=()=>{if(!E.plans.renove){memo();E.plans.renove=JSON.parse(JSON.stringify(E.plans.actuel));rechargerFonds();dire("Plan rénové créé comme copie du plan actuel. Modifie-le : les murs créés et démolis sont comptés dans les quantités.")}plan="renove";sel=null;modifie()};
-$("nom").onchange=e=>{E.nom=e.target.value;modifie()};$("b-annuler").onclick=annuler;
+$("nom").onchange=e=>{E.nom=e.target.value;modifie()};$("b-annuler").onclick=annuler;$("b-nouveau").onclick=()=>{memo();E.plans={actuel:{niveaux:[{nom:"Rez-de-chaussée",altitude:0,hauteur:2.5,pieces:[]}]},renove:null};E.nom="Nouveau relevé";plan="actuel";iNiv=0;sel=null;cadrer();modifie();dire("Relevé vide : touche « Pièce » puis chaque angle. « Annuler » fait revenir le relevé précédent.")};
 function tout(){$("nom").value=E.nom;$("t-actuel").classList.toggle("actif",plan==="actuel");$("t-renove").classList.toggle("actif",plan==="renove");$("t-renove").textContent=E.plans.renove?"Plan rénové":"+ Plan rénové";niveauxMaj();ongletsMaj();panneau();dessiner()}
 // ---------------------------------------------------------------- vue 3D (three.js)
 let T3=null;
@@ -228,7 +228,7 @@ function vue3d(){if(!window.THREE){$("panneau").insertAdjacentHTML("beforeend",'
  const O=[];n.pieces.forEach(p=>(p.ouvertures||[]).forEach(o=>{const a=p.contour[o.mur%p.contour.length],b=p.contour[(o.mur+1)%p.contour.length],L=dist(a,b)||1;O.push({o,m:[a[0]+(b[0]-a[0])/L*o.position,a[1]+(b[1]-a[1])/L*o.position]})}));
  troncons(n.pieces).forEach(([a,b])=>{const L=dist(a,b),u=[(b[0]-a[0])/L,(b[1]-a[1])/L],h=n.hauteur,pt=s=>[a[0]+u[0]*s,a[1]+u[1]*s];const tr=[];O.forEach(x=>{const pr=proj(x.m,a,b);if(pr.d<.05&&pr.s>.01&&pr.s<L-.01&&!tr.some(t=>Math.abs(t.s-pr.s)<.2))tr.push({s:pr.s,o:x.o})});tr.sort((x,y)=>x.s-y.s);let s=0;
   tr.forEach(t=>{const s0=Math.max(s,t.s-t.o.largeur/2),s1=Math.min(L,t.s+t.o.largeur/2);boite(pt(s),pt(s0),0,h,mm);boite(pt(s0),pt(s1),0,t.o.allege,mm);boite(pt(s0),pt(s1),t.o.allege+t.o.hauteur,h,mm);if(t.o.type==="fenetre"||t.o.type==="baie")boite(pt(s0),pt(s1),t.o.allege,t.o.allege+t.o.hauteur,mv,.04);s=s1});boite(pt(s),b,0,h,mm)});
- const pts=n.pieces.flatMap(p=>p.contour);if(pts.length){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);T3.cible.set((Math.min(...xs)+Math.max(...xs))/2,n.hauteur/3,-(Math.min(...ys)+Math.max(...ys))/2);if(!T3.vu){T3.d=1.5*Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys),4);T3.vu=1}}T3.sc=sc;rendre3d()}
+ const pts=n.pieces.flatMap(p=>p.contour);if(pts.length){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);T3.cible.set((Math.min(...xs)+Math.max(...xs))/2,n.hauteur/3,-(Math.min(...ys)+Math.max(...ys))/2);if(!T3.vu){T3.d=(T3.cam.aspect<1.3?2.5:1.5)*Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys),4);T3.vu=1}}T3.sc=sc;rendre3d()}
 function rendre3d(){const t=T3;t.cam.position.set(t.cible.x+t.d*Math.cos(t.el)*Math.sin(t.az),t.cible.y+t.d*Math.sin(t.el),t.cible.z+t.d*Math.cos(t.el)*Math.cos(t.az));t.cam.lookAt(t.cible);t.re.render(t.sc,t.cam)}
 // ---------------------------------------------------------------- enregistrement : poste (serveur local), sinon page publiée (téléchargement), sinon fichier
 function fichier(){const o=JSON.parse(JSON.stringify(E));delete o.exemple;return Object.assign({format:"releve-numerobis-1",niveaux:o.plans[plan]?o.plans[plan].niveaux:o.plans.actuel.niveaux,plan_exporte:plan,date:new Date().toISOString().slice(0,10)},o)}
